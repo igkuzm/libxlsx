@@ -185,7 +185,7 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 }
 
 xlsxWorkSheet * 
-xlsx_getWorkSheet(xlsxWorkBook* wb, int num)
+xlsx_get_worksheet(xlsxWorkBook* wb, int num)
 {
 	if (num < 0 || num > wb->nsheets)
 		return NULL;
@@ -201,7 +201,7 @@ xlsx_getWorkSheet(xlsxWorkBook* wb, int num)
 }
 
 
-void xlsx_close_WS(xlsxWorkSheet* ws){
+void xlsx_close_worksheet(xlsxWorkSheet* ws){
 	int i, k;
 	for (i = 0; i < ws->nrows; ++i) {
 		xlsxRow *row;

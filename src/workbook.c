@@ -76,7 +76,7 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 	return wb;	
 }
 
-void xlsx_close_WB(xlsxWorkBook* wb){
+void xlsx_close_workbook(xlsxWorkBook* wb){
 	zip_close(wb->zip);
 	free(wb);
 }

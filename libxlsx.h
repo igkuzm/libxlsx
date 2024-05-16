@@ -12,22 +12,22 @@ typedef struct xlsx_workbook xlsxWorkBook;
 xlsxWorkBook *xlsx_open_file(const char *file);
 
 /* close file and free memory */
-void xlsx_close_WB(xlsxWorkBook* pWB);
+void xlsx_close_workbook(xlsxWorkBook* wb);
 
 typedef struct xlsx_worksheet xlsxWorkSheet;
 /* get worksheet */
-xlsxWorkSheet * xlsx_getWorkSheet(xlsxWorkBook* pWB, 
+xlsxWorkSheet * xlsx_get_worksheet(xlsxWorkBook* wb, 
 		int num);
 /* free worksheet memory */
-void xlsx_close_WS(xlsxWorkSheet* pWS);
+void xlsx_close_worksheet(xlsxWorkSheet* ws);
 
 typedef struct xlsx_row xlsxRow;
 /* get row with number */
-xlsxRow *xlsx_row(xlsxWorkSheet* pWS, int cellRow);
+xlsxRow *xlsx_row(xlsxWorkSheet* ws, int cellRow);
 
 typedef struct xlsx_cell xlsxCell;
 /* get cell with row and column number */
-xlsxCell	*xlsx_cell(xlsxWorkSheet* pWS, int cellRow, int cellCol);
+xlsxCell	*xlsx_cell(xlsxWorkSheet* ws, int cellRow, int cellCol);
 
 typedef struct xlsx_color {
 	int rgb;
