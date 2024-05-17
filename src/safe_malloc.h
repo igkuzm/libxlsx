@@ -1,12 +1,14 @@
-#include <stdio.h>
 #ifndef MALLOC
+#include <stdlib.h>
+#include "log.h"
 #define MALLOC(size, ret) \
 ({\
  void *p = malloc(size);\
 	 if (p == NULL){\
-		perror("malloc");\
+		ERR("malloc");\
 		ret;\
 	 }\
+	 memset(p,0,size);\
 	 p;\
  })
 #endif /* ifndef MALLOC */
@@ -16,7 +18,7 @@
 ({\
  void *p = realloc(ptr, size);\
 	 if (p == NULL){\
-		perror("malloc");\
+		ERR("realloc");\
 		ret;\
 	 }\
 	 p;\

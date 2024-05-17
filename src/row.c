@@ -1,4 +1,5 @@
 #include "row.h"
+#include "ezxml.h"
 #include "safe_malloc.h"
 #include <stdlib.h>
 #include <string.h>
@@ -7,7 +8,7 @@
 void xlsx_parse_row(xlsxRow *r, ezxml_t row, 
 		xlsxWorkBook *wb)
 {
-		r->height = XLSX_DEF_ROW_HEIGHT;
+	r->height = XLSX_DEF_ROW_HEIGHT;
 
 	//get row ref
 	const char * ref = ezxml_attr(row, "r");
@@ -57,10 +58,11 @@ void xlsx_parse_row(xlsxRow *r, ezxml_t row,
 	//get cell
 	ezxml_t cell = ezxml_child(row, "c");
 	r->cells = MALLOC(1, return);
+	r->ncells = 0;
 	for(; cell; cell = cell->next){
 		// allocate cell
 		xlsxCell *c = MALLOC(sizeof(xlsxCell), return);
-	
+		
 		// realloc cells
 		r->cells = 
 			REALLOC(r->cells, (1+r->ncells)*sizeof(xlsxCell*), return);

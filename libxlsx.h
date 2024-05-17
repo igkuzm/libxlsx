@@ -6,6 +6,7 @@ extern "C" {
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 typedef struct xlsx_workbook xlsxWorkBook;
 /* read xlsx file and get workbook */
@@ -45,9 +46,9 @@ typedef struct xlsx_font {
 	char name[32];
 	char scheme[32];
 	xlsxColor color;
+	double size;
 	int family;
 	int charset;
-	double size;
 	bool bold;
 	bool italic;
 	bool outline;
@@ -62,32 +63,32 @@ typedef struct xlsx_border {
 
 typedef struct xlsx_formated_string {
 	xlsxFont font;
-	char *string;
 	struct xlsx_formated_string *next;
+	char *string;
 } xlsxFormatedString;
 
 struct xlsx_cell {
-	char ref[32];
-	char *value;
-	char *formula;
 	xlsxFormatedString *fsting;
-	int numFmtId;
-	xlsxColor fg;
-	xlsxColor bg;
-	char pattern[32];
-	xlsxFont font;	
 	xlsxBorder left;
 	xlsxBorder right;
 	xlsxBorder top;
 	xlsxBorder bottom;
 	xlsxBorder diagonal;
+	char ref[32];
+	char pattern[32];
+	char *value;
+	char *formula;
+	xlsxColor fg;
+	xlsxColor bg;
+	xlsxFont font;	
 	xlsxAlignment alignment;
+	int numFmtId;
 };
 
 #define XLSX_DEF_ROW_HEIGHT 15
 struct xlsx_row {
 	xlsxCell **cells;
-	int ncells;
+	unsigned int ncells;
 	char ref[32];
 	double height;
 	bool hidden;
@@ -121,9 +122,10 @@ _xlsx_merge_range_cells(xlsxMergedCell *mc, int fr, int fc, int lr, int lc){
 }
 
 struct xlsx_worksheet {
+	void *buf;
 	void *xml;
 	xlsxRow **rows;
-	int nrows;
+	unsigned int nrows;
 	xlsxCol **cols;
 	int ncols;
 	xlsxMergedCell **mergedCells;
@@ -150,8 +152,11 @@ struct xlsx_workbook {
 	int nsheets;
 	void *zip;
 	void *workbook;
+	void *workbookb;
 	void *sharedStrings;
+	void *sharedStringsb;
 	void *styles;
+	void *stylesb;
 };
 
 #endif // ifndef LIB_XLSX_H 

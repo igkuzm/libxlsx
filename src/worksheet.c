@@ -15,14 +15,12 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 	char sheetxml[32];
 	sprintf(sheetxml, "xl/worksheets/sheet%d.xml", num);
 
-	void *buffer;
 	size_t size;
 	if (zip_entry_read(wb->zip, sheetxml,
-				&buffer, &size))
+				&ws->buf, &size))
 			return -1;
 	
-	ezxml_t xml = ezxml_parse_str(buffer, size);
-	free(buffer);
+	ezxml_t xml = ezxml_parse_str(ws->buf, size);
 	if (!xml)
 		return -1;
 
@@ -31,10 +29,6 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 	/*! TODO: add sheet properties
 	 *  \todo add sheet properties
 	 */
-
-	ezxml_t data = ezxml_child(xml, "sheetData");
-	if (!data)
-		return -1;
 
 	//pageMargins
 	ezxml_t pageMargins = ezxml_child(xml, "pageMargins");
@@ -114,7 +108,7 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 		
 		// realloc columns
 		ws->cols = 
-			REALLOC(column, (1+i)*sizeof(xlsxCol*), return  -1;);
+			REALLOC(column, (1+ws->ncols)*sizeof(xlsxCol*), return  -1;);
 		ws->cols[ws->ncols++] = column;	
 
 		column->width = XLSX_DEF_COL_WIDTH;
@@ -156,7 +150,7 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 		
 		// realloc columns
 		ws->mergedCells = 
-			REALLOC(ws->mergedCells, (1+i)*sizeof(xlsxMergedCell*), return  -1;);
+			REALLOC(ws->mergedCells, (ws->nmergedCells+1)*sizeof(xlsxMergedCell*), return  -1;);
 		ws->mergedCells[ws->nmergedCells++] = mc;	
 
 		const char * ref = ezxml_attr(mergeCell, "ref");
@@ -166,21 +160,23 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 	}
 
 	//parse row
-	int addrow = 0, rowindex = 0;
-	ezxml_t prev_row = NULL;
+	ezxml_t data = ezxml_child(xml, "sheetData");
+	if (!data)
+		return -1;
+
 	ezxml_t row = ezxml_child(data, "row");
 	ws->rows = MALLOC(1, return -1);
-	for(;row; prev_row = row, row = row->next, rowindex++)
+	for(;row; row = row->next)
 	{
 		// allocate row
 		xlsxRow *r = MALLOC(sizeof(xlsxRow), return -1);
 	
 		// realloc rows
 		ws->rows = 
-			REALLOC(ws->rows, (1+i)*sizeof(xlsxRow*), return  -1;);
+			REALLOC(ws->rows, (1+ws->nrows)*sizeof(xlsxRow*), return  -1;);
 		ws->rows[ws->nrows++] = r;	
 		
-		xlsx_parse_row(r, row, wb->styles);
+		xlsx_parse_row(r, row, wb);
 	}	
 		
 	return 0;
@@ -189,12 +185,12 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 xlsxWorkSheet * 
 xlsx_get_worksheet(xlsxWorkBook* wb, int num)
 {
-	if (num < 0 || num > wb->nsheets)
+	// worksheet starts from 1;
+	if (num < 0 || num > wb->nsheets + 1)
 		return NULL;
 
 	xlsxWorkSheet *ws = 
 		MALLOC(sizeof(xlsxWorkSheet), return NULL);
-	memset(ws, 0, sizeof(xlsxWorkSheet));
 
 	// parse worksheet
 	parse_worksheet(wb, ws, num);
@@ -208,9 +204,9 @@ void xlsx_close_worksheet(xlsxWorkSheet* ws){
 		return;
 	int i, k;
 	for (i = 0; i < ws->nrows; ++i) {
-		xlsxRow *row;
+		xlsxRow *row = ws->rows[i];
 		for (k = 0; k < row->ncells; ++k) {
-			xlsxCell *cell;
+			xlsxCell *cell = row->cells[k];
 			free(cell->value);
 			free(cell);
 		}
@@ -220,5 +216,7 @@ void xlsx_close_worksheet(xlsxWorkSheet* ws){
 	free(ws->rows);
 	if (ws->xml)
 		ezxml_free(ws->xml);
+	if (ws->buf)
+		free(ws->buf);
 	free(ws);
 }

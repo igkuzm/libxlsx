@@ -24,13 +24,8 @@ zip_entry_read(zip_t *zip, const char *name,
 	zip_fread(f, buf, st.size);
 	zip_fclose(f);
 
-	if (*buffer)
-		*buffer = buf;
-	else
-		free(buf);
-
-	if (*size)
-		*size = st.size;
+	*buffer = buf;
+	*size = st.size;
 
 	return 0;
 }

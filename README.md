@@ -7,10 +7,10 @@ if (wb){
     if (ws){
       for (int i=0; i < ws->nrows; ++i){
         xlsxRow *row = ws->rows[i];
-          for (int k=0; k < row->ncells; ++k){
-            xlsxCell *cell = row->cells[k]
-            printf("%s\t", cell->value);
-          }
+        for (int k=0; k < row->ncells; ++k){
+          xlsxCell *cell = row->cells[k];
+          printf("%s\t", cell->value?cell->value:"");
+        }
         printf("\n");
        }
        xlsx_close_worksheet(ws);

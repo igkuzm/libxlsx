@@ -7,9 +7,6 @@
 xlsxWorkBook *xlsx_open_file(const char *file)
 {
 	int err = 0;
-	size_t size;
-	void *buffer;
-	struct zip_stat st;
 	zip_file_t *f; 
 	
 	// try to open zip file
@@ -19,27 +16,29 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 		return NULL;
 	}
 	
-	// try to load workbook.xml
-	if (zip_entry_read(zip, "xl/workbook.xml",
-				&buffer, &size))
-	{
-		perror("file is not XLSX format");
-		zip_close(zip);
-		return NULL;
-	}
-
 	xlsxWorkBook *wb = 
 		MALLOC(sizeof(xlsxWorkBook), 
 				zip_close(zip);
 				return NULL);
 
-	// read workbook
-	wb->workbook = ezxml_parse_str(buffer, size);
-	free(buffer);
-	if (!wb->workbook){
-		perror("xl/workbook.xml is damaged");
-		zip_close(zip);
-		return NULL;
+	// try to load workbook.xml
+	{
+		size_t size;
+		if (zip_entry_read(zip, "xl/workbook.xml",
+					&wb->workbookb, &size))
+		{
+			ERR("file is not XLSX format");
+			zip_close(zip);
+			return NULL;
+		}
+
+		// read workbook
+		wb->workbook = ezxml_parse_str(wb->workbookb, size);
+		if (!wb->workbook){
+			ERR("xl/workbook.xml is damaged");
+			zip_close(zip);
+			return NULL;
+		}
 	}
 
 	// get number of sheets
@@ -54,21 +53,21 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 	}		
 
 	// load styles
-	wb->styles = NULL;
-	if (!zip_entry_read(zip, "xl/styles.xml",
-				&buffer, &size))
 	{
-		wb->styles = ezxml_parse_str(buffer, size);
-		free(buffer);
+		size_t size;
+		wb->styles = NULL;
+		if (!zip_entry_read(zip, "xl/styles.xml",
+					&wb->stylesb, &size))
+			wb->styles = ezxml_parse_str(wb->stylesb, size);
 	}
-
+	 
 	// load sharedStrings
-	wb->sharedStrings = NULL;
-	if (!zip_entry_read(zip, "xl/sharedStrings.xml",
-				&buffer, &size))
 	{
-		wb->sharedStrings = ezxml_parse_str(buffer, size);
-		free(buffer);
+		size_t size;
+		wb->sharedStrings = NULL;
+		if (!zip_entry_read(zip, "xl/sharedStrings.xml",
+					&wb->sharedStringsb, &size))
+			wb->sharedStrings = ezxml_parse_str(wb->sharedStringsb, size);
 	}
 
 	wb->zip = zip;
@@ -83,9 +82,15 @@ void xlsx_close_workbook(xlsxWorkBook* wb){
 		zip_close(wb->zip);
 	if (wb->workbook)
 		ezxml_free(wb->workbook);
+	if (wb->workbookb)
+		free(wb->workbookb);
 	if (wb->sharedStrings)
 		ezxml_free(wb->sharedStrings);
+	if (wb->sharedStringsb)
+		free(wb->sharedStringsb);
 	if (wb->styles)
 		ezxml_free(wb->styles);
+	if (wb->stylesb)
+		free(wb->stylesb);
 	free(wb);
 }

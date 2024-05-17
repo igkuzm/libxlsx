@@ -1,5 +1,6 @@
 #include "cell_value.h"
 #include <string.h>
+#include "ezxml.h"
 #include "font.h"
 #include "safe_malloc.h"
 #include "str.h"
@@ -59,7 +60,6 @@ void xlsx_parse_cell_value(xlsxCell *c, ezxml_t cell,
 						
 						//allocate ritch string
 						xlsxFormatedString *new = MALLOC(sizeof(xlsxFormatedString), return);
-						memset(new, 0, sizeof(xlsxFormatedString));
 						ptr->next = new;
 					
 						ezxml_t t = ezxml_child(_r, "t");
