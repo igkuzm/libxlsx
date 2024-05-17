@@ -1,6 +1,6 @@
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
 #ifndef LIB_XLSX_H
 #define LIB_XLSX_H
 
@@ -121,6 +121,7 @@ _xlsx_merge_range_cells(xlsxMergedCell *mc, int fr, int fc, int lr, int lc){
 }
 
 struct xlsx_worksheet {
+	void *xml;
 	xlsxRow **rows;
 	int nrows;
 	xlsxCol **cols;
@@ -153,12 +154,7 @@ struct xlsx_workbook {
 	void *styles;
 };
 
-struct key_value{
-	int  value;
-	char key[32];	
-};
-
-//#endif [> ifndef LIB_XLSX_H <]
-//#ifdef __cplusplus
-//}  /* end of the 'extern "C"' block */
+#endif // ifndef LIB_XLSX_H 
+#ifdef __cplusplus
+}  // end of the 'extern "C"' block
 #endif

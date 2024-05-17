@@ -8,7 +8,7 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 {
 	int err = 0;
 	size_t size;
-	char *buffer;
+	void *buffer;
 	struct zip_stat st;
 	zip_file_t *f; 
 	
@@ -77,6 +77,15 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 }
 
 void xlsx_close_workbook(xlsxWorkBook* wb){
-	zip_close(wb->zip);
+	if (!wb)
+		return;
+	if (wb->zip)
+		zip_close(wb->zip);
+	if (wb->workbook)
+		ezxml_free(wb->workbook);
+	if (wb->sharedStrings)
+		ezxml_free(wb->sharedStrings);
+	if (wb->styles)
+		ezxml_free(wb->styles);
 	free(wb);
 }

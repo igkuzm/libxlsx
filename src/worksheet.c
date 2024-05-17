@@ -25,6 +25,8 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 	free(buffer);
 	if (!xml)
 		return -1;
+
+	ws->xml = xml;
 	
 	/*! TODO: add sheet properties
 	 *  \todo add sheet properties
@@ -202,6 +204,8 @@ xlsx_get_worksheet(xlsxWorkBook* wb, int num)
 
 
 void xlsx_close_worksheet(xlsxWorkSheet* ws){
+	if (!ws)
+		return;
 	int i, k;
 	for (i = 0; i < ws->nrows; ++i) {
 		xlsxRow *row;
@@ -214,5 +218,7 @@ void xlsx_close_worksheet(xlsxWorkSheet* ws){
 		free(row);
 	}
 	free(ws->rows);
+	if (ws->xml)
+		ezxml_free(ws->xml);
 	free(ws);
 }
