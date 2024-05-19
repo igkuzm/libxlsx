@@ -55,7 +55,7 @@ void xlsx_parse_cell_value(xlsxCell *c, ezxml_t cell,
 					{
 						// cycle trough ritch string pointer
 						xlsxFormatedString *ptr = c->fsting;
-						while(ptr)
+						while(ptr && ptr->next)
 							ptr = ptr->next;
 						
 						//allocate ritch string
