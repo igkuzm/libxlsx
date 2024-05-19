@@ -60,7 +60,8 @@ void xlsx_parse_cell_value(xlsxCell *c, ezxml_t cell,
 						
 						//allocate ritch string
 						xlsxFormatedString *new = MALLOC(sizeof(xlsxFormatedString), return);
-						ptr->next = new;
+						if (ptr)
+							ptr->next = new;
 					
 						ezxml_t t = ezxml_child(_r, "t");
 						if (t){
