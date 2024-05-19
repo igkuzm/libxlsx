@@ -62,6 +62,8 @@ void xlsx_parse_cell_value(xlsxCell *c, ezxml_t cell,
 						xlsxFormatedString *new = MALLOC(sizeof(xlsxFormatedString), return);
 						if (ptr)
 							ptr->next = new;
+						else
+							c->fsting = new;
 					
 						ezxml_t t = ezxml_child(_r, "t");
 						if (t){
