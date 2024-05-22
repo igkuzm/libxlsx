@@ -1,13 +1,19 @@
 #include "row.h"
+#include "array.h"
 #include "ezxml.h"
-#include "safe_malloc.h"
+#include "alloc.h"
 #include <stdlib.h>
 #include <string.h>
 #include "cell.h"
+#include "font.h"
+#include "log.h"
 
 void xlsx_parse_row(xlsxRow *r, ezxml_t row, 
 		xlsxWorkBook *wb)
 {
+#ifdef DEBUG
+	LOG("parse row") 
+#endif
 	r->height = XLSX_DEF_ROW_HEIGHT;
 
 	//get row ref
@@ -57,17 +63,21 @@ void xlsx_parse_row(xlsxRow *r, ezxml_t row,
 
 	//get cell
 	ezxml_t cell = ezxml_child(row, "c");
-	r->cells = MALLOC(1, return);
-	r->ncells = 0;
+	array_t *a = array_new(xlsxCell*,
+		 	ERR("array_new"); return);
+	
 	for(; cell; cell = cell->next){
 		// allocate cell
-		xlsxCell *c = MALLOC(sizeof(xlsxCell), return);
-		
-		// realloc cells
-		r->cells = 
-			REALLOC(r->cells, (1+r->ncells)*sizeof(xlsxCell*), return);
-		r->cells[r->ncells++] = c;	
+		xlsxCell *c = MALLOC(sizeof(xlsxCell), 
+				ERR("malloc"); return);
 		
 		xlsx_parse_cell(c, cell, wb);
+		
+		array_append(a, xlsxCell*, c, 
+				ERR("array_append"); return);
 	}
+	
+	r->cells = a->data;
+	r->ncells = a->len;
+	free(a);
 }

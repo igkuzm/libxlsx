@@ -1,9 +1,13 @@
 #include "font.h"
 #include "color.h"
 #include <string.h>
+#include "log.h"
 
 void xlsx_parse_font(xlsxFont *f, ezxml_t font)
 {
+#ifdef DEBUG
+	LOG(ezxml_toxml(font));
+#endif
 	ezxml_t name = ezxml_child(font, "name");
 	if (name){
 		const char * val = ezxml_attr(name, "val");

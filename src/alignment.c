@@ -1,8 +1,13 @@
 #include "alignment.h"
 #include <string.h>
+#include "ezxml.h"
+#include "log.h"
 
 void xlsx_parse_alignment(xlsxAlignment *a, ezxml_t alignment)
 {
+#ifdef DEBUG
+	LOG(ezxml_toxml(alignment));
+#endif
 	const char * horizontal = ezxml_attr(alignment, "horizontal");
 	if (horizontal)
 		strncpy(a->horizontal, horizontal, sizeof(a->horizontal)-1);

@@ -1,6 +1,8 @@
 #include "../libxlsx.h"
+#include "array.h"
 #include "ezxml.h"
-#include "safe_malloc.h"
+#include "alloc.h"
+#include "log.h"
 #include "zip_entry_read.h"
 #include <string.h>
 #include <stdbool.h>
@@ -10,6 +12,10 @@
 static int 
 parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 {
+#ifdef DEBUG
+	LOG("open worksheet %d", num);
+#endif
+
 	int i;
 
 	char sheetxml[32];
@@ -101,16 +107,18 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 	//parse cols 
 	ezxml_t cols = ezxml_child(xml, "cols");
 	ezxml_t col = ezxml_child(cols, "col");
-	ws->cols = MALLOC(1, return -1);
+
+	array_t *acols = array_new(xlsxCol*, 
+			ERR("array_new cols"); return -1);
+
 	for(;col; col = col->next){
 		// allocate column
-		xlsxCol *column = MALLOC(sizeof(xlsxCol), return -1);
-		
-		// realloc columns
-		ws->cols = 
-			REALLOC(column, (1+ws->ncols)*sizeof(xlsxCol*), return  -1;);
-		ws->cols[ws->ncols++] = column;	
+		xlsxCol *column = MALLOC(sizeof(xlsxCol), 
+				ERR("column malloc"); return -1);
 
+		array_append(acols, xlsxCol*, column, 
+				ERR("array_append column"); return -1);
+		
 		column->width = XLSX_DEF_COL_WIDTH;
 		
 		//get col hidden
@@ -139,25 +147,33 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 				column->width = atof(width);
 		}
 	}
+	ws->cols = acols->data;
+	ws->ncols = acols->len;
+	free(acols);
 
 	//merge cells
 	ezxml_t mergeCells = ezxml_child(xml, "mergeCells");
 	ezxml_t mergeCell =  ezxml_child(mergeCells, "mergeCell");
-	ws->mergedCells = MALLOC(1, return -1);
+	
+	array_t *mcells = array_new(xlsxMergedCell*, 
+			ERR("array_new cols"); return -1);
+	
 	for (; mergeCell; mergeCell = mergeCell->next) {
 		// allocate merged cell
-		xlsxMergedCell *mc = MALLOC(sizeof(xlsxMergedCell), return -1);
+		xlsxMergedCell *mc = MALLOC(sizeof(xlsxMergedCell), 
+				ERR("malloc mergeCell"); return -1);
 		
-		// realloc columns
-		ws->mergedCells = 
-			REALLOC(ws->mergedCells, (ws->nmergedCells+1)*sizeof(xlsxMergedCell*), return  -1;);
-		ws->mergedCells[ws->nmergedCells++] = mc;	
-
 		const char * ref = ezxml_attr(mergeCell, "ref");
 		if (ref){
 			_xlsx_merge_range_cells(mc, RANGE(ref));
 		}
+		
+		array_append(mcells, xlsxMergedCell*, mc, 
+				ERR("array_append mergeCell"); return -1);
 	}
+	ws->mergedCells = mcells->data;
+	ws->nmergedCells = mcells->len;
+	free(mcells);
 
 	//parse row
 	ezxml_t data = ezxml_child(xml, "sheetData");
@@ -165,19 +181,24 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 		return -1;
 
 	ezxml_t row = ezxml_child(data, "row");
-	ws->rows = MALLOC(1, return -1);
+
+	array_t *arows = array_new(xlsxRow*, 
+			ERR("array_new rows"); return -1);
+
 	for(;row; row = row->next)
 	{
 		// allocate row
-		xlsxRow *r = MALLOC(sizeof(xlsxRow), return -1);
+		xlsxRow *r = MALLOC(sizeof(xlsxRow), 
+				ERR("malloc row"); return -1);
 	
-		// realloc rows
-		ws->rows = 
-			REALLOC(ws->rows, (1+ws->nrows)*sizeof(xlsxRow*), return  -1;);
-		ws->rows[ws->nrows++] = r;	
-		
 		xlsx_parse_row(r, row, wb);
+
+		array_append(arows, xlsxRow*, r, 
+				ERR("array_append row"); return -1);
 	}	
+	ws->rows = arows->data;
+	ws->nrows = arows->len;
+	free(arows);
 		
 	return 0;
 }
@@ -186,11 +207,14 @@ xlsxWorkSheet *
 xlsx_get_worksheet(xlsxWorkBook* wb, int num)
 {
 	// worksheet starts from 1;
-	if (num < 0 || num > wb->nsheets + 1)
+	if (num < 0 || num > wb->nsheets + 1){
+		ERR("worksheet is out of range");
 		return NULL;
+	}
 
 	xlsxWorkSheet *ws = 
-		MALLOC(sizeof(xlsxWorkSheet), return NULL);
+		MALLOC(sizeof(xlsxWorkSheet), 
+				ERR("malloc"); return NULL);
 
 	// parse worksheet
 	parse_worksheet(wb, ws, num);
@@ -200,6 +224,9 @@ xlsx_get_worksheet(xlsxWorkBook* wb, int num)
 
 
 void xlsx_close_worksheet(xlsxWorkSheet* ws){
+#ifdef DEBUG
+	LOG("close worksheet);
+#endif
 	if (!ws)
 		return;
 	int i, k;

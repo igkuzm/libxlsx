@@ -5,10 +5,14 @@
 #include "alignment.h"
 #include <string.h>
 #include "cell_value.h"
+#include "log.h"
 
 void xlsx_parse_cell(xlsxCell *c, ezxml_t cell, 
 		xlsxWorkBook *wb)
 {
+#ifdef DEBUG
+	LOG(ezxml_toxml(cell));
+#endif
 	//cell ref 
 	const char * ref = ezxml_attr(cell, "r");
 	strncpy(c->ref, ref, sizeof(c->ref) - 1);

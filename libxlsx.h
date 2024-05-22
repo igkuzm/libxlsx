@@ -63,12 +63,12 @@ typedef struct xlsx_border {
 
 typedef struct xlsx_formated_string {
 	xlsxFont font;
-	struct xlsx_formated_string *next;
 	char *string;
 } xlsxFormatedString;
 
 struct xlsx_cell {
 	xlsxFormatedString *fsting;
+	int nfstring;
 	xlsxBorder left;
 	xlsxBorder right;
 	xlsxBorder top;

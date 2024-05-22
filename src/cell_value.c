@@ -2,8 +2,10 @@
 #include <string.h>
 #include "ezxml.h"
 #include "font.h"
-#include "safe_malloc.h"
+#include "alloc.h"
 #include "str.h"
+#include "log.h"
+#include "array.h"
 
 void xlsx_parse_cell_value(xlsxCell *c, ezxml_t cell, 
 		xlsxWorkBook *wb)
@@ -49,22 +51,17 @@ void xlsx_parse_cell_value(xlsxCell *c, ezxml_t cell,
 				ezxml_t _r = ezxml_get(wb->sharedStrings, "si", atoi(value), "r", 0, "");
 				if (_r) //shared ritch string
 				{ 
-					struct str str; // non-formating string to save value
+					// non-formating string to save value
+					struct str str; 
 					str_init(&str, 64);
+					// formated string to save as array
+					array_t *a = array_new(xlsxFormatedString, 
+							ERR("array_new"); return);
 					for (; _r; _r=_r->next)
 					{
-						// cycle trough ritch string pointer
-						xlsxFormatedString *ptr = c->fsting;
-						while(ptr && ptr->next)
-							ptr = ptr->next;
-						
-						//allocate ritch string
-						xlsxFormatedString *new = MALLOC(sizeof(xlsxFormatedString), return);
-						if (ptr)
-							ptr->next = new;
-						else
-							c->fsting = new;
-					
+						xlsxFormatedString fsting;
+						memset(&fsting, 0, sizeof(xlsxFormatedString));
+
 						ezxml_t t = ezxml_child(_r, "t");
 						if (t){
 							const char * space = ezxml_attr(t, "xml:space");
@@ -73,19 +70,27 @@ void xlsx_parse_cell_value(xlsxCell *c, ezxml_t cell,
 							}
 							ezxml_t rPr = ezxml_child(_r, "rPr");
 							if (rPr)
-								xlsx_parse_font(&new->font, rPr);
+								xlsx_parse_font(&fsting.font, rPr);
 
 							// add string value
 							if (t->txt){
 								// add to formated string
-								new->string = strdup(t->txt);
+								fsting.string = strdup(t->txt);
 								// add to non-formated string
 								str_append(&str, t->txt, strlen(t->txt));
 							}
+
+							array_append(a, xlsxFormatedString, fsting, 
+									ERR("array_append"); return);
 						}
 					}
 					// save non-formated string to value
 					c->value = str.str;
+
+					// save formated string
+					c->fsting = a->data;
+					c->nfstring = a->len;
+					free(a);
 				} 
 				//common shared string
 				else {

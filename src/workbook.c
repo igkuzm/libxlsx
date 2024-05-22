@@ -2,22 +2,29 @@
 #include <zip.h>
 #include "zip_entry_read.h"
 #include "../libxlsx.h"
-#include "safe_malloc.h"
+#include "alloc.h"
+#include "array.h"
+#include "log.h"
 
 xlsxWorkBook *xlsx_open_file(const char *file)
 {
+#ifdef DEBUG
+	LOG("open file: %s", file);
+#endif
+
 	int err = 0;
 	zip_file_t *f; 
 	
 	// try to open zip file
 	zip_t *zip = zip_open(file, ZIP_RDONLY, &err);
 	if (err){
-		perror("extracting zip archive");
+		ERR("extracting zip archive");
 		return NULL;
 	}
 	
 	xlsxWorkBook *wb = 
 		MALLOC(sizeof(xlsxWorkBook), 
+				ERR("workbook malloc");
 				zip_close(zip);
 				return NULL);
 
@@ -52,6 +59,10 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 			wb->nsheets++;
 	}		
 
+#ifdef DEBUG
+	LOG("workbook has %d sheets", wb->nsheets);
+#endif
+
 	// load styles
 	{
 		size_t size;
@@ -76,6 +87,9 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 }
 
 void xlsx_close_workbook(xlsxWorkBook* wb){
+#ifdef DEBUG
+	LOG("close workbook");
+#endif
 	if (!wb)
 		return;
 	if (wb->zip)
