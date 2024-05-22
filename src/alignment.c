@@ -6,7 +6,7 @@
 void xlsx_parse_alignment(xlsxAlignment *a, ezxml_t alignment)
 {
 #ifdef DEBUG
-	LOG(ezxml_toxml(alignment));
+	LOG("%s", ezxml_toxml(alignment));
 #endif
 	const char * horizontal = ezxml_attr(alignment, "horizontal");
 	if (horizontal)

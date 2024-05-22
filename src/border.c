@@ -6,7 +6,7 @@
 void xlsx_parse_border(xlsxBorder *b, ezxml_t xml)
 {
 #ifdef DEBUG
-	LOG(ezxml_toxml(xml));
+	LOG("%s", ezxml_toxml(xml));
 #endif
 	const char * style = ezxml_attr(xml, "style");
 	if (style)

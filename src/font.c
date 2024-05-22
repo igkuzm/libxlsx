@@ -6,7 +6,7 @@
 void xlsx_parse_font(xlsxFont *f, ezxml_t font)
 {
 #ifdef DEBUG
-	LOG(ezxml_toxml(font));
+	LOG("%s", ezxml_toxml(font));
 #endif
 	ezxml_t name = ezxml_child(font, "name");
 	if (name){
