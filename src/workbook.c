@@ -39,6 +39,9 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 			return NULL;
 		}
 
+#ifdef DEBUG
+	LOG("parse workbook"); 
+#endif
 		// read workbook
 		wb->workbook = ezxml_parse_str(wb->workbookb, size);
 		if (!wb->workbook){

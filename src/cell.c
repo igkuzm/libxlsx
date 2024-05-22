@@ -11,7 +11,7 @@ void xlsx_parse_cell(xlsxCell *c, ezxml_t cell,
 		xlsxWorkBook *wb)
 {
 #ifdef DEBUG
-	LOG(ezxml_toxml(cell));
+	LOG("%s", ezxml_toxml(cell));
 #endif
 	//cell ref 
 	const char * ref = ezxml_attr(cell, "r");

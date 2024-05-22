@@ -12,7 +12,7 @@ void xlsx_parse_row(xlsxRow *r, ezxml_t row,
 		xlsxWorkBook *wb)
 {
 #ifdef DEBUG
-	LOG("parse row") 
+	LOG("parse row"); 
 #endif
 	r->height = XLSX_DEF_ROW_HEIGHT;
 
@@ -62,6 +62,9 @@ void xlsx_parse_row(xlsxRow *r, ezxml_t row,
 	}
 
 	//get cell
+#ifdef DEBUG
+	LOG("parse cells"); 
+#endif
 	ezxml_t cell = ezxml_child(row, "c");
 	array_t *a = array_new(xlsxCell*,
 		 	ERR("array_new"); return);
@@ -76,8 +79,15 @@ void xlsx_parse_row(xlsxRow *r, ezxml_t row,
 		array_append(a, xlsxCell*, c, 
 				ERR("array_append"); return);
 	}
+#ifdef DEBUG
+	LOG("parse cells - done"); 
+#endif
 	
 	r->cells = a->data;
 	r->ncells = a->len;
 	free(a);
+
+#ifdef DEBUG
+	LOG("parse row - done"); 
+#endif
 }

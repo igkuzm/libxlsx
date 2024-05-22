@@ -50,8 +50,19 @@ extern "C" {
 	#define LOG(fmt, ...) NSLog(CFSTR(fmt), ##__VA_ARGS__)
 	#define ERR(fmt, ...) LOG("E/_%s: %d: %s", __func__, __LINE__, STR(fmt, __VA_ARGS__)) 
 #else
-	#define LOG(...) fprintf(stderr, "%s: _%s: %s\n",   __FILE__, __func__, STR(__VA_ARGS__))
-	#define ERR(...) perror(STR("E/%s: _%s: %d: %s", __FILE__, __func__, __LINE__, __VA_ARGS__)) 
+	#define LOG(...) \
+	({ \
+		char s[BUFSIZ]; snprintf(s, BUFSIZ-1, __VA_ARGS__); s[BUFSIZ-1]=0; \
+		fprintf(stderr, "%s: _%s: %s\n",   __FILE__, __func__, s); \
+	 })
+
+	#define ERR(...) \
+	({\
+		char s[BUFSIZ]; snprintf(s, BUFSIZ-1, __VA_ARGS__); s[BUFSIZ-1]=0; \
+		char e[BUFSIZ]; snprintf(e, BUFSIZ-1, "E/%s: _%s: %d: %s", __FILE__, __func__, __LINE__, s); e[BUFSIZ-1]=0; \
+	  perror(e); \
+	})
+	
 #endif
 
 

@@ -176,6 +176,9 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 	free(mcells);
 
 	//parse row
+#ifdef DEBUG
+	LOG("parse rows in worksheet: %d", num); 
+#endif
 	ezxml_t data = ezxml_child(xml, "sheetData");
 	if (!data)
 		return -1;
@@ -200,12 +203,19 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 	ws->nrows = arows->len;
 	free(arows);
 		
+#ifdef DEBUG
+	LOG("parse rows in worksheet: %d - done", num); 
+#endif
+
 	return 0;
 }
 
 xlsxWorkSheet * 
 xlsx_get_worksheet(xlsxWorkBook* wb, int num)
 {
+#ifdef DEBUG
+	LOG("parse worksheet %d", num); 
+#endif
 	// worksheet starts from 1;
 	if (num < 0 || num > wb->nsheets + 1){
 		ERR("worksheet is out of range");
@@ -219,13 +229,17 @@ xlsx_get_worksheet(xlsxWorkBook* wb, int num)
 	// parse worksheet
 	parse_worksheet(wb, ws, num);
 	
+#ifdef DEBUG
+	LOG("parse worksheet %d - done", num); 
+#endif
+
 	return ws;
 }
 
 
 void xlsx_close_worksheet(xlsxWorkSheet* ws){
 #ifdef DEBUG
-	LOG("close worksheet);
+	LOG("close worksheet");
 #endif
 	if (!ws)
 		return;

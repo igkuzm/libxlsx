@@ -4,6 +4,8 @@ extern "C" {
 #ifndef LIB_XLSX_H
 #define LIB_XLSX_H
 
+	#define DEBUG
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
