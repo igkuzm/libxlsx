@@ -23,7 +23,7 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 	}
 	
 	xlsxWorkBook *wb = 
-		MALLOC(sizeof(xlsxWorkBook), 
+		NEW(xlsxWorkBook, 
 				ERR("workbook malloc");
 				zip_close(zip);
 				return NULL);
@@ -43,7 +43,7 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 	LOG("parse workbook"); 
 #endif
 		// read workbook
-		wb->workbook = ezxml_parse_str(wb->workbookb, size);
+		wb->workbook = ezxml_parse_str((char *)wb->workbookb, size);
 		if (!wb->workbook){
 			ERR("xl/workbook.xml is damaged");
 			zip_close(zip);
@@ -72,7 +72,7 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 		wb->styles = NULL;
 		if (!zip_entry_read(zip, "xl/styles.xml",
 					&wb->stylesb, &size))
-			wb->styles = ezxml_parse_str(wb->stylesb, size);
+			wb->styles = ezxml_parse_str((char *)wb->stylesb, size);
 	}
 	 
 	// load sharedStrings
@@ -81,7 +81,7 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 		wb->sharedStrings = NULL;
 		if (!zip_entry_read(zip, "xl/sharedStrings.xml",
 					&wb->sharedStringsb, &size))
-			wb->sharedStrings = ezxml_parse_str(wb->sharedStringsb, size);
+			wb->sharedStrings = ezxml_parse_str((char *)wb->sharedStringsb, size);
 	}
 
 	wb->zip = zip;
@@ -98,15 +98,15 @@ void xlsx_close_workbook(xlsxWorkBook* wb){
 	if (wb->zip)
 		zip_close(wb->zip);
 	if (wb->workbook)
-		ezxml_free(wb->workbook);
+		ezxml_free((ezxml_t)wb->workbook);
 	if (wb->workbookb)
 		free(wb->workbookb);
 	if (wb->sharedStrings)
-		ezxml_free(wb->sharedStrings);
+		ezxml_free((ezxml_t)wb->sharedStrings);
 	if (wb->sharedStringsb)
 		free(wb->sharedStringsb);
 	if (wb->styles)
-		ezxml_free(wb->styles);
+		ezxml_free((ezxml_t)wb->styles);
 	if (wb->stylesb)
 		free(wb->stylesb);
 	free(wb);

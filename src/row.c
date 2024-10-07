@@ -71,7 +71,7 @@ void xlsx_parse_row(xlsxRow *r, ezxml_t row,
 	
 	for(; cell; cell = cell->next){
 		// allocate cell
-		xlsxCell *c = MALLOC(sizeof(xlsxCell), 
+		xlsxCell *c = NEW(xlsxCell, 
 				ERR("malloc"); return);
 		
 		xlsx_parse_cell(c, cell, wb);

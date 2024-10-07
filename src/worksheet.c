@@ -26,7 +26,7 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 				&ws->buf, &size))
 			return -1;
 	
-	ezxml_t xml = ezxml_parse_str(ws->buf, size);
+	ezxml_t xml = ezxml_parse_str((char *)ws->buf, size);
 	if (!xml)
 		return -1;
 
@@ -113,7 +113,7 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 
 	for(;col; col = col->next){
 		// allocate column
-		xlsxCol *column = MALLOC(sizeof(xlsxCol), 
+		xlsxCol *column = NEW(xlsxCol, 
 				ERR("column malloc"); return -1);
 
 		array_append(acols, xlsxCol*, column, 
@@ -160,7 +160,7 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 	
 	for (; mergeCell; mergeCell = mergeCell->next) {
 		// allocate merged cell
-		xlsxMergedCell *mc = MALLOC(sizeof(xlsxMergedCell), 
+		xlsxMergedCell *mc = NEW(xlsxMergedCell, 
 				ERR("malloc mergeCell"); return -1);
 		
 		const char * ref = ezxml_attr(mergeCell, "ref");
@@ -191,7 +191,7 @@ parse_worksheet(xlsxWorkBook *wb, xlsxWorkSheet *ws, int num)
 	for(;row; row = row->next)
 	{
 		// allocate row
-		xlsxRow *r = MALLOC(sizeof(xlsxRow), 
+		xlsxRow *r = NEW(xlsxRow, 
 				ERR("malloc row"); return -1);
 	
 		xlsx_parse_row(r, row, wb);
@@ -223,7 +223,7 @@ xlsx_get_worksheet(xlsxWorkBook* wb, int num)
 	}
 
 	xlsxWorkSheet *ws = 
-		MALLOC(sizeof(xlsxWorkSheet), 
+		NEW(xlsxWorkSheet, 
 				ERR("malloc"); return NULL);
 
 	// parse worksheet
@@ -256,7 +256,7 @@ void xlsx_close_worksheet(xlsxWorkSheet* ws){
 	}
 	free(ws->rows);
 	if (ws->xml)
-		ezxml_free(ws->xml);
+		ezxml_free((ezxml_t)ws->xml);
 	if (ws->buf)
 		free(ws->buf);
 	free(ws);
