@@ -54,7 +54,7 @@ xlsxWorkBook *xlsx_open_file(const char *file)
 	// get number of sheets
 	wb->nsheets = 0;
 	ezxml_t sheets = 
-		ezxml_child(wb->workbook, "sheets");
+		ezxml_child((ezxml_t)wb->workbook, "sheets");
 	if (sheets){
 		ezxml_t s;
 		for (s = ezxml_child(sheets, "sheet"); 
@@ -96,7 +96,7 @@ void xlsx_close_workbook(xlsxWorkBook* wb){
 	if (!wb)
 		return;
 	if (wb->zip)
-		zip_close(wb->zip);
+		zip_close((zip_t *)wb->zip);
 	if (wb->workbook)
 		ezxml_free((ezxml_t)wb->workbook);
 	if (wb->workbookb)
